@@ -12,8 +12,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.List;
-import com.itextpdf.text.ListItem;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Section;
@@ -21,13 +20,14 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
-
 public class Prova {
     private static String FILE = "test.pdf";
-    private static Font bigFont  = new Font(Font.FontFamily.TIMES_ROMAN, 18,  Font.BOLD);
-    private static Font redFont  = new Font(Font.FontFamily.TIMES_ROMAN, 12,  Font.NORMAL, BaseColor.RED);
-    private static Font subFont  = new Font(Font.FontFamily.TIMES_ROMAN, 16,  Font.BOLD);
-    private static Font smallBold  = new Font(Font.FontFamily.TIMES_ROMAN, 12,  Font.BOLD);
+    private static Font redbigFont = new Font(Font.FontFamily.HELVETICA, 52,  Font.BOLD, BaseColor.RED);
+    private static Font bigFont = new Font(Font.FontFamily.HELVETICA, 40,  Font.BOLD);
+    private static Font subBoldFont  = new Font(Font.FontFamily.HELVETICA, 16 ,Font.BOLD);
+    private static Font subFont  = new Font(Font.FontFamily.HELVETICA, 16);
+    private static Font redsubFont  = new Font(Font.FontFamily.HELVETICA, 14,  Font.BOLD, BaseColor.RED);
+    private static Font smallBold  = new Font(Font.FontFamily.COURIER, 14,  Font.BOLD, BaseColor.LIGHT_GRAY);
 
     public static void main(String[] args) {
         try {
@@ -37,7 +37,6 @@ public class Prova {
             aggiungiMetaDati(document);
             aggiungiPrefazione(document);
             aggiungiContenuto(document);
-            aggiungiImmagine(document);
             document.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,91 +53,104 @@ public class Prova {
         document.addCreator("Necula-Ruan");
     }
 
-    private static void aggiungiPrefazione(Document document) throws DocumentException {
+    private static void aggiungiPrefazione(Document document) throws DocumentException, IOException {
         Paragraph prefazione = new Paragraph();
 
-        // Aggiungiamo una linea vuota
+        // Aggiungiamo frase con due font diversi
+        Phrase phrase = new Phrase();
+        phrase.add(new Chunk("THE EVOLUTION OF ",  bigFont));
+        phrase.add(new Chunk("PDF", redbigFont));
+
+        // Aggiungiamo il titolo fatto dalla frase
+        Paragraph para = new Paragraph();
+        para.add(phrase);
+
+        //Allineamento centrale
+        para.setAlignment(Element.ALIGN_CENTER);
+        prefazione.add(para);
         aggiungiLineaVuota(prefazione, 1);
 
-        // Aggiungiamo il titolo
-        prefazione.add(new Paragraph("TPSIT", bigFont));
-
-        aggiungiLineaVuota(prefazione, 1);
+        //Aggiunta immagine
+        String imageFile = "immag.PNG";
+        Image image = Image.getInstance(imageFile);
+        float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() ) / image.getWidth()) * 100;
+        image.scalePercent(scaler);
+        prefazione.add(image);
 
         // Questa linea scrive "Documento generato da: nome utente, data"
         prefazione.add(new Paragraph("Documento generato da: " + System.getProperty("user.name") + ", " + new Date(), smallBold));
 
-        aggiungiLineaVuota(prefazione, 3);
-
-        prefazione.add(new Paragraph("Generato da iText", smallBold));
-
-        aggiungiLineaVuota(prefazione, 3);
-
-        prefazione.add(new Paragraph("Generato da iText", redFont));
-
-        aggiungiLineaVuota(prefazione, 3);
-
-        //Aggiunta link
-        Anchor anchor = new Anchor("Questo è un link");
+        Anchor anchor = new Anchor("Zuccante.it",smallBold);
         anchor.setName("LINK");
+
         anchor.setReference("https://www.zuccante.it/");
         prefazione.add(anchor);
 
         // Aggiunta al documento
         document.add(prefazione);
 
-        // Nuova pagina
-        document.newPage();
     }
 
-    private static void aggiungiContenuto(Document document) throws DocumentException {
+    private static void aggiungiContenuto(Document document) throws DocumentException, IOException {
+        Paragraph questionParagraph = new Paragraph("WHAT IS PDF?", bigFont);
+        questionParagraph.setAlignment(Element.ALIGN_CENTER);
+        aggiungiLineaVuota(questionParagraph, 1);
+        Chapter chapterOne = new Chapter(questionParagraph,1);
 
-        // Il secondo parametro è il numero di capitolo
-        Chapter chapter = new Chapter(new Paragraph("Primo Capitolo", bigFont), 1);
+        Paragraph answerParagraph = new Paragraph();
+        Phrase answerPhrase = new Phrase();
+        answerPhrase.add(new Chunk("PDF stands for ", subBoldFont));
+        answerPhrase.add(new Chunk("PORTABLE DOCUMENT FORMAT", redsubFont));
+        answerParagraph.setAlignment(Element.ALIGN_CENTER);
+        answerParagraph.add(answerPhrase);
+        chapterOne.add(answerParagraph);
 
-        Paragraph sectionParagraph = new Paragraph("Sezione 1", subFont);
-        Section section = chapter.addSection(sectionParagraph);
-        section.add(new Paragraph("Paragrafo 1"));
+        Paragraph one = new Paragraph();
+        Phrase onePhrase = new Phrase("It is essentially an electronic paper", subFont);
+        one.add(onePhrase);
+        Image imageOne = Image.getInstance("CatturaUNO.PNG");
+        aggiungiLineaVuota(one, 1);
+        float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() ) / imageOne.getWidth()) * 12;
+        imageOne.scalePercent(scaler);
+        one.add(imageOne);
 
-        sectionParagraph = new Paragraph("Sezione 2", subFont);
-        section = chapter.addSection(sectionParagraph);
-        section.add(new Paragraph("Paragrafo 1"));
-        section.add(new Paragraph("Paragrafo 2"));
-        section.add(new Paragraph("Paragrafo 3"));
+        Paragraph two = new Paragraph();
+        Phrase twoPhrase = new Phrase("It can be viewed on every device", subFont);
+        two.add(twoPhrase);
+        Image imageTwo = Image.getInstance("Cattura2.PNG");
+        aggiungiLineaVuota(two, 1);
+        float scaler2 = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() ) / imageTwo.getWidth()) * 12;
+        imageTwo.scalePercent(scaler2);
+        two.add(imageTwo);
 
-        // Aggiungiamo una lista
-        creaLista(section);
+        Paragraph three = new Paragraph();
+        Phrase threePhrase = new Phrase("It does not require specialized software or hardware", subFont);
+        three.add(threePhrase);
+        Image imageThree = Image.getInstance("Cattura3.PNG");
+        aggiungiLineaVuota(three, 1);
+        float scaler3 = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() ) / imageThree.getWidth()) * 12;
+        imageThree.scalePercent(scaler3);
+        three.add(imageThree);
 
-        Paragraph paragraph = new Paragraph();
-        aggiungiLineaVuota(paragraph, 2);
-        section.add(paragraph);
+        Paragraph four = new Paragraph();
+        Phrase fourPhrase = new Phrase("It preserves content and formatting", subFont);
+        four.add(fourPhrase);
+        Image imageFour = Image.getInstance("Cattura4.PNG");
+        aggiungiLineaVuota(four, 1);
+        float scaler4 = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() ) / imageFour.getWidth()) * 12;
+        imageFour.scalePercent(scaler4);
+        four.add(imageFour);
 
-        // Aggiungiamo una tabella
-        creaTabella(section);
+        chapterOne.addSection(one);
+        chapterOne.addSection(two);
+        chapterOne.addSection(three);
+        chapterOne.addSection(four);
+        document.add(chapterOne);
 
-        // Aggiunta al documento
-        document.add(chapter);
-
-        // Prossimo capitolo
-
-        // Il secondo parametro è il numero di capitolo
-        chapter = new Chapter(new Paragraph("Secondo Capitolo", bigFont), 2);
-
-        sectionParagraph = new Paragraph("Sezione 1", subFont);
-        section = chapter.addSection(sectionParagraph);
-        section.add(new Paragraph("Paragrafo 1"));
-
-        // Aggiunta al documento
-        document.add(chapter);
     }
 
     private static void creaTabella(Section section) throws BadElementException {
         PdfPTable tabella = new PdfPTable(3);
-
-        // tabella.setBorderColor(BaseColor.GRAY);
-        // tabella.setPadding(4);
-        // tabella.setSpacing(4);
-        // tabella.setBorderWidth(1);
 
         PdfPCell c1 = new PdfPCell(new Phrase("Titolo 1"));
         c1.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -162,25 +174,7 @@ public class Prova {
         tabella.addCell("2.1");
         tabella.addCell("2.2");
         tabella.addCell("2.3");
-
         section.add(tabella);
-
-    }
-
-    private static void creaLista(Section section) {
-        List list = new List(true, false, 10);
-        list.add(new ListItem("Punto primo"));
-        list.add(new ListItem("Punto secondo"));
-        list.add(new ListItem("Punto terzo"));
-        section.add(list);
-    }
-
-    private static void aggiungiImmagine(Document document) throws Exception {
-        Image img = Image.getInstance("Java_logo.png");
-        img.scalePercent(10);
-
-        PdfPCell imageCell = new PdfPCell(img);
-        document.add(imageCell);
     }
 
     private static void aggiungiLineaVuota(Paragraph paragraph, int number) {
@@ -189,3 +183,6 @@ public class Prova {
         }
     }
 }
+
+
+
